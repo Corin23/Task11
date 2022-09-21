@@ -1,0 +1,115 @@
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11$ git clone git://git.yoctoproject.org/poky
+Cloning into 'poky'...
+remote: Enumerating objects: 575898, done.
+remote: Counting objects: 100% (607/607), done.
+remote: Compressing objects: 100% (142/142), done.
+remote: Total 575898 (delta 507), reused 505 (delta 464), pack-reused 575291
+Receiving objects: 100% (575898/575898), 185.75 MiB | 2.22 MiB/s, done.
+Resolving deltas: 100% (418749/418749), done.
+
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11$ cd poky
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky$ git checkout -t origin/kirkstone -b my-kirkstone
+Branch 'my-kirkstone' set up to track remote branch 'kirkstone' from 'origin'.
+Switched to a new branch 'my-kirkstone'
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky$ source oe-init-build-env
+### Shell environment set up for builds. ###
+
+You can now run 'bitbake <target>'
+
+Common targets are:
+    core-image-minimal
+    core-image-full-cmdline
+    core-image-sato
+    core-image-weston
+    meta-toolchain
+    meta-ide-support
+
+You can also run generated qemu images with a command like 'runqemu qemux86'
+
+Other commonly useful commands are:
+ - 'devtool' and 'recipetool' handle common recipe tasks
+ - 'bitbake-layers' handles common layer tasks
+ - 'oe-pkgdata-util' handles common target package tasks
+
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky/build$ bitbake core-image-base
+Loading cache: 100% |###########################################################################| Time: 0:00:00
+Loaded 1641 entries from dependency cache.
+NOTE: Resolving any missing task queue dependencies
+
+Build Configuration:
+BB_VERSION           = "2.0.0"
+BUILD_SYS            = "x86_64-linux"
+NATIVELSBSTRING      = "universal"
+TARGET_SYS           = "x86_64-poky-linux"
+MACHINE              = "qemux86-64"
+DISTRO               = "poky"
+DISTRO_VERSION       = "4.0.4"
+TUNE_FEATURES        = "m64 core2"
+TARGET_FPU           = ""
+meta                 
+meta-poky            
+meta-yocto-bsp       = "my-kirkstone:d64bef1c7d713b92a51228e5ade945835e5a94a4"
+
+Initialising tasks: 100% |######################################################################| Time: 0:00:01
+Sstate summary: Wanted 500 Local 0 Mirrors 0 Missed 500 Current 1080 (0% match, 68% complete)
+NOTE: Executing Tasks
+NOTE: Tasks Summary: Attempted 3980 tasks of which 3178 didn't need to be rerun and all succeeded.
+
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky/build/tmp/deploy/images/qemux86-64$
+qemu-system-x86_64 -enable-kvm -boot menu=on \
+-drive file=/home/corin/Desktop/Tasks/Task11/poky/build/tmp/deploy/images/qemux86-64/core-image-base-qemux86-64-20220919123513.rootfs.ext4,format=raw \ 
+-m 2G -cpu host -smp 2 \ 
+-kernel /home/corin/Desktop/Tasks/Task11/poky/build/tmp/deploy/images/qemux86-64/bzImage \
+-append "console=ttyS0,115200 root=/dev/sda rw ip=dhcp " \ 
+-vga virtio -display sdl,gl=on
+
+qemux86-64 login: root
+root@qemux86-64:~#uname -a
+Linux qemux86-64 5.15.62-yocto-standard #1 SMP PREEMTP Mon Aug 22 15:18:08 UTC 2022 x86_64 GNU/Linux
+
+------------------------------------------------------------------------------------------------------------------
+
+OE-core Poky 
+
+CC="x86_64-poky-linux-gcc  -m64 -march=core2 -mtune=core2 -msse3 -mfpmath=sse -fstack-protector-strong  -O2 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security --sysroot=/> ....
+CFLAGS=" -O2 -pipe -g -feliminate-unused-debug-types -fmacro-prefix-map=/home/corin/Desktop/Tasks/Task11/poky/build/tmp/work/qemux86_64-poky-linux/base-files/3.0.14-r89=/usr/src/debug/base-f>
+
+------------------------------------------------------------------------------------------------------------------
+
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky$ git clone https://github.com/YoeDistro/meta-intel.git
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky$ source oe-init-build-env
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky/build$ bitbake-layers add-layer ~/Desktop/Tasks/Task11/poky/meta-intel
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky/build/conf$ vim local.conf
+
+ > QB_SYSTEM_NAME_intel-corei7-64 = "qemu-system-x86_64"
+ > QB_CPU_intel-corei7-64 = "-cpu Nehalem"
+ > QB_CPU_KVM_intel-corei7-64 = "-cpu kvm64"
+ >
+ > QB_SYSTEM_NAME_intel-quark = "qemu-system-i386"
+ > QB_CPU_intel-quark = "-cpu coreduo"
+ > QB_CPU_KVM_intel-quark = "-cpu kvm32"
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky/build$ bitbake core-image-base
+
+corin@otp-cdobrica-l1:~/Desktop/Tasks/Task11/poky/build/tmp/deploy/images/qemux86-64$
+qemu-system-x86_64 -enable-kvm -boot menu=on -drive file=/home/corin/Desktop/Tasks/Task11/poky/build/tmp/deploy/images/qemux86-64/core-image-base-qemux86-64-20220921073912.rootfs.ext4,format=raw  -m 2G -cpu host -smp 2 -kernel /home/corin/Desktop/Tasks/Task11/poky/build/tmp/deploy/images/qemux86-64/bzImage -append "console=ttyS0,115200 root=/dev/sda rw ip=dhcp " -vga virtio -display sdl,gl=on
+
+----------------------------------------------------------------------------------------------------------
+
+intel_corei7-64
+
+CC="x86_64-poky-linux-gcc  -m64 -march=nehalem -mtune=generic -mfpmath=sse -msse4.2 -fstack-protector-strong  -O2 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security --sys>
+
+CFLAGS=" -O2 -pipe -g -feliminate-unused-debug-types -fmacro-prefix-map=/home/corin/Desktop/Tasks/Task11/poky/build/tmp/work/intel_corei7_64-poky-linux/base-files/3.0.14-r89=/usr/src/debug/b>
+
+
+----------------------------------------------------------------------------------------------------------
+
+
